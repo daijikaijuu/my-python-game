@@ -4,13 +4,13 @@
 МБОУ "Гимназия №75", г. Казань
 """
 
+from typing import Any, override
 import pygame
-import sys
 import math
-from typing import List, Tuple, Dict, Any
+
 
 # Инициализация Pygame
-pygame.init()
+_ = pygame.init()
 
 # Константы
 WIDTH, HEIGHT = 800, 600
@@ -40,9 +40,9 @@ clock = pygame.time.Clock()
 
 # Инициализация шрифтов
 try:
-    font_large = pygame.font.SysFont('Arial', 36, bold=True)
-    font_medium = pygame.font.SysFont('Arial', 24)
-    font_small = pygame.font.SysFont('Arial', 18)
+    font_large = pygame.font.SysFont("Arial", 36, bold=True)
+    font_medium = pygame.font.SysFont("Arial", 24)
+    font_small = pygame.font.SysFont("Arial", 18)
 except:
     font_large = pygame.font.Font(None, 36)
     font_medium = pygame.font.Font(None, 24)
@@ -52,19 +52,19 @@ except:
 class Player(pygame.sprite.Sprite):
     """Класс игрока с физикой движения и анимацией"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.image = pygame.Surface((35, 50), pygame.SRCALPHA)
+        self.image: pygame.Surface = pygame.Surface((35, 50), pygame.SRCALPHA)
         self._draw_character()
-        self.rect = self.image.get_rect()
+        self.rect: pygame.Rect = self.image.get_rect()
         self.rect.center = (100, HEIGHT - 100)
-        self.velocity_y = 0.0
-        self.jumping = False
-        self.speed = 4
-        self.score = 0
-        self.lives = 2  # Две жизни
-        self.invincible = False
-        self.invincible_timer = 0
+        self.velocity_y: float = 0.0
+        self.jumping: bool = False
+        self.speed: int = 4
+        self.score: int = 0
+        self.lives: int = 2  # Две жизни
+        self.invincible: bool = False
+        self.invincible_timer: int = 0
 
     def _draw_character(self) -> None:
         """Отрисовка персонажа"""
@@ -79,6 +79,7 @@ class Player(pygame.sprite.Sprite):
         pygame.draw.rect(self.image, Colors.BROWN, (8, 40, 8, 10))
         pygame.draw.rect(self.image, Colors.BROWN, (19, 40, 8, 10))
 
+    @override
     def update(self) -> None:
         """Обновление физики персонажа"""
         # Гравитация
@@ -128,13 +129,13 @@ class Player(pygame.sprite.Sprite):
 class Coin(pygame.sprite.Sprite):
     """Класс собираемой монетки с анимацией"""
 
-    def __init__(self, x: int, y: int):
+    def __init__(self, x: int, y: int) -> None:
         super().__init__()
-        self.image = pygame.Surface((25, 25), pygame.SRCALPHA)
+        self.image: pygame.Surface = pygame.Surface((25, 25), pygame.SRCALPHA)
         self._draw_coin()
-        self.rect = self.image.get_rect()
+        self.rect: pygame.Rect = self.image.get_rect()
         self.rect.center = (x, y)
-        self.original_y = y
+        self.original_y: int = y
 
     def _draw_coin(self) -> None:
         """Отрисовка монетки"""
@@ -145,28 +146,39 @@ class Coin(pygame.sprite.Sprite):
         # Блики
         pygame.draw.ellipse(self.image, (255, 255, 200), (5, 5, 8, 4))
 
+    @override
     def update(self) -> None:
         """Анимация подпрыгивания"""
-        self.rect.y = self.original_y + int(math.sin(pygame.time.get_ticks() * 0.005) * 3)
+        self.rect.y = self.original_y + int(
+            math.sin(pygame.time.get_ticks() * 0.005) * 3
+        )
 
 
 class Enemy(pygame.sprite.Sprite):
     """Класс врага с патрулированием по платформе"""
 
-    def __init__(self, platform_rect: pygame.Rect, speed: int = 2, custom_bounds: Tuple[int, int] = None):
+    left_bound: int
+    right_bound: int
+
+    def __init__(
+        self,
+        platform_rect: pygame.Rect,
+        speed: int = 2,
+        custom_bounds: tuple[int, int] | None = None,
+    ):
         super().__init__()
-        self.image = pygame.Surface((40, 40), pygame.SRCALPHA)
+        self.image: pygame.Surface = pygame.Surface((40, 40), pygame.SRCALPHA)
         self._draw_enemy()
-        self.rect = self.image.get_rect()
+        self.rect: pygame.Rect = self.image.get_rect()
 
         # Позиционируем врага на платформе
-        self.platform_rect = platform_rect
+        self.platform_rect: pygame.Rect = platform_rect
         self.rect.bottom = platform_rect.top
         self.rect.centerx = platform_rect.centerx
 
         # Уменьшаем скорость на 30%
-        self.speed = max(1, int(speed * 0.7))
-        self.direction = 1
+        self.speed: int = max(1, int(speed * 0.7))
+        self.direction: int = 1
 
         # Настраиваем границы патрулирования
         if custom_bounds:
@@ -187,6 +199,7 @@ class Enemy(pygame.sprite.Sprite):
         # Рот
         pygame.draw.arc(self.image, Colors.BLACK, (10, 18, 20, 15), 0, math.pi, 2)
 
+    @override
     def update(self) -> None:
         """Обновление патрулирования по платформе"""
         self.rect.x += self.speed * self.direction
@@ -202,10 +215,10 @@ class Enemy(pygame.sprite.Sprite):
 class Platform(pygame.sprite.Sprite):
     """Класс игровой платформы"""
 
-    def __init__(self, x: int, y: int, width: int, height: int):
+    def __init__(self, x: int, y: int, width: int, height: int) -> None:
         super().__init__()
-        self.image = pygame.Surface((width, height))
-        self.rect = self.image.get_rect()
+        self.image: pygame.Surface = pygame.Surface((width, height))
+        self.rect: pygame.Rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         self._draw_platform(width, height)
@@ -222,10 +235,10 @@ class Platform(pygame.sprite.Sprite):
 class Ground(pygame.sprite.Sprite):
     """Класс земли/основания"""
 
-    def __init__(self, x: int, y: int, width: int, height: int):
+    def __init__(self, x: int, y: int, width: int, height: int) -> None:
         super().__init__()
-        self.image = pygame.Surface((width, height))
-        self.rect = self.image.get_rect()
+        self.image: pygame.Surface = pygame.Surface((width, height))
+        self.rect: pygame.Rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         self._draw_ground(width, height)
@@ -242,11 +255,11 @@ class Ground(pygame.sprite.Sprite):
 class FinishFlag(pygame.sprite.Sprite):
     """Класс финишного флага"""
 
-    def __init__(self, x: int, y: int):
+    def __init__(self, x: int, y: int) -> None:
         super().__init__()
-        self.image = pygame.Surface((30, 50), pygame.SRCALPHA)
+        self.image: pygame.Surface = pygame.Surface((30, 50), pygame.SRCALPHA)
         self._draw_flag()
-        self.rect = self.image.get_rect()
+        self.rect: pygame.Rect = self.image.get_rect()
         self.rect.bottom = y
         self.rect.centerx = x
 
@@ -262,16 +275,16 @@ class FinishFlag(pygame.sprite.Sprite):
 class Game:
     """Основной класс игры"""
 
-    def __init__(self):
-        self.player: Player = None
-        self.all_sprites = pygame.sprite.Group()
-        self.platforms = pygame.sprite.Group()
-        self.coins = pygame.sprite.Group()
-        self.enemies = pygame.sprite.Group()
-        self.finish_flag = None
-        self.coin_positions: List[Tuple[int, int]] = []
-        self.game_over = False
-        self.game_won = False
+    def __init__(self) -> None:
+        self.player: Player | None = None
+        self.all_sprites: pygame.sprite.Group[Any] = pygame.sprite.Group()
+        self.platforms: pygame.sprite.Group[Any] = pygame.sprite.Group()
+        self.coins: pygame.sprite.Group[Any] = pygame.sprite.Group()
+        self.enemies: pygame.sprite.Group[Any] = pygame.sprite.Group()
+        self.finish_flag: FinishFlag | None = None
+        self.coin_positions: list[tuple[int, int]] = []
+        self.game_over: bool = False
+        self.game_won: bool = False
 
     def create_level(self) -> None:
         """Создание игрового уровня"""
@@ -290,10 +303,10 @@ class Game:
             (400, 400, 150, 20),  # Вторая платформа
             (200, 300, 100, 20),  # Третья платформа
             (600, 450, 150, 20),  # Четвертая платформа
-            (500, 250, 100, 20)  # Пятая платформа (самая верхняя)
+            (500, 250, 100, 20),  # Пятая платформа (самая верхняя)
         ]
 
-        platforms_list = []
+        platforms_list: list[Platform] = []
         for x, y, width, height in platform_data:
             platform = Platform(x, y, width, height)
             self.platforms.add(platform)
@@ -302,11 +315,20 @@ class Game:
 
         # Монетки (перенесены с финишной платформы на другие платформы)
         self.coin_positions = [
-            (150, 420), (250, 420), (350, 370),
-            (450, 370), (550, 420), (650, 420),
-            (250, 270), (150, 370), (700, 420),  # Вместо (550, 220) -> (150, 370)
-            (100, 520), (300, 520), (400, 420),
-            (650, 370)  # Вместо (530, 220) -> (650, 370)
+            (150, 420),
+            (250, 420),
+            (350, 370),
+            (450, 370),
+            (550, 420),
+            (650, 420),
+            # Вместо (550, 220) -> (150, 370)
+            (250, 270),
+            (150, 370),
+            (700, 420),
+            (100, 520),
+            (300, 520),
+            (400, 420),
+            (650, 370),  # Вместо (530, 220) -> (650, 370)
         ]
 
         for x, y in self.coin_positions:
@@ -319,7 +341,7 @@ class Game:
         enemy_data = [
             (platforms_list[0].rect, 2, None),  # На первой платформе
             (platforms_list[1].rect, 3, None),  # На второй платформе
-            (platforms_list[3].rect, 2, None)  # На четвертой платформе
+            (platforms_list[3].rect, 2, None),  # На четвертой платформе
         ]
 
         for platform_rect, speed, custom_bounds in enemy_data:
@@ -368,18 +390,22 @@ class Game:
 
         for platform in platform_hits:
             # Столкновение сверху (игрок падает на платформу)
-            if (self.player.velocity_y > 0 and
-                    self.player.rect.bottom > platform.rect.top and
-                    self.player.rect.top < platform.rect.top):
+            if (
+                self.player.velocity_y > 0
+                and self.player.rect.bottom > platform.rect.top
+                and self.player.rect.top < platform.rect.top
+            ):
                 self.player.rect.bottom = platform.rect.top
                 self.player.jumping = False
                 self.player.velocity_y = 0
                 on_ground = True
 
             # Столкновение снизу (игрок ударяется головой о платформу)
-            elif (self.player.velocity_y < 0 and
-                  self.player.rect.top < platform.rect.bottom and
-                  self.player.rect.bottom > platform.rect.bottom):
+            elif (
+                self.player.velocity_y < 0
+                and self.player.rect.top < platform.rect.bottom
+                and self.player.rect.bottom > platform.rect.bottom
+            ):
                 self.player.rect.top = platform.rect.bottom
                 self.player.velocity_y = 0
 
@@ -419,13 +445,17 @@ class Game:
                 self.game_over = True
 
         # Проверка достижения финиша
-        if self.finish_flag and pygame.sprite.collide_rect(self.player, self.finish_flag):
+        if self.finish_flag and pygame.sprite.collide_rect(
+            self.player, self.finish_flag
+        ):
             self.game_won = True
 
     def draw_ui(self) -> None:
         """Отрисовка пользовательского интерфейса"""
         # Счет
-        score_text = font_medium.render(f"Очки: {self.player.score}", True, Colors.BLACK)
+        score_text = font_medium.render(
+            f"Очки: {self.player.score}", True, Colors.BLACK
+        )
         screen.blit(score_text, (10, 10))
 
         # Жизни
@@ -434,15 +464,16 @@ class Game:
 
         # Управление
         controls_text = font_small.render(
-            "Управление: ← → двигаться, ↑ прыжок, R перезапуск",
-            True, Colors.BLACK
+            "Управление: ← → двигаться, ↑ прыжок, R перезапуск", True, Colors.BLACK
         )
         screen.blit(controls_text, (10, HEIGHT - 30))
 
         # Мигание при неуязвимости
         if self.player.invincible and self.player.invincible_timer % 10 < 5:
             # Создаем полупрозрачную поверхность для мигания
-            blink_surface = pygame.Surface((self.player.rect.width, self.player.rect.height), pygame.SRCALPHA)
+            blink_surface = pygame.Surface(
+                (self.player.rect.width, self.player.rect.height), pygame.SRCALPHA
+            )
             blink_surface.fill((255, 255, 255, 128))
             screen.blit(blink_surface, self.player.rect)
 
@@ -455,8 +486,13 @@ class Game:
         game_over_text = font_large.render("ИГРА ОКОНЧЕНА!", True, Colors.RED)
         restart_text = font_medium.render("Нажми R для перезапуска", True, Colors.WHITE)
 
-        screen.blit(game_over_text, (WIDTH // 2 - game_over_text.get_width() // 2, HEIGHT // 2 - 50))
-        screen.blit(restart_text, (WIDTH // 2 - restart_text.get_width() // 2, HEIGHT // 2 + 10))
+        screen.blit(
+            game_over_text,
+            (WIDTH // 2 - game_over_text.get_width() // 2, HEIGHT // 2 - 50),
+        )
+        screen.blit(
+            restart_text, (WIDTH // 2 - restart_text.get_width() // 2, HEIGHT // 2 + 10)
+        )
 
     def draw_victory(self) -> None:
         """Отрисовка экрана победы"""
@@ -479,12 +515,19 @@ class Game:
         texts = [
             font_large.render("ПОБЕДА!", True, Colors.GREEN),
             font_medium.render(f"Звезды: {stars}", True, Colors.YELLOW),
-            font_medium.render(f"Собрано монет: {collected_coins}/{total_coins}", True, Colors.WHITE),
-            font_medium.render("Нажми R для перезапуска", True, Colors.WHITE)
+            font_medium.render(
+                f"Собрано монет: {collected_coins}/{total_coins}", True, Colors.WHITE
+            ),
+            font_medium.render("Нажми R для перезапуска", True, Colors.WHITE),
         ]
 
         # Расположение текстов
-        y_positions = [HEIGHT // 2 - 80, HEIGHT // 2 - 30, HEIGHT // 2 + 10, HEIGHT // 2 + 50]
+        y_positions = [
+            HEIGHT // 2 - 80,
+            HEIGHT // 2 - 30,
+            HEIGHT // 2 + 10,
+            HEIGHT // 2 + 50,
+        ]
         for text, y in zip(texts, y_positions):
             screen.blit(text, (WIDTH // 2 - text.get_width() // 2, y))
 
@@ -496,11 +539,16 @@ class Game:
     def _draw_star(self, x: int, y: int) -> None:
         """Отрисовка звезды"""
         points = [
-            (x, y), (x + 10, y - 20), (x + 20, y),
-            (x + 5, y + 10), (x + 15, y + 30),
-            (x, y + 15), (x - 15, y + 30),
-            (x - 5, y + 10), (x - 20, y),
-            (x - 10, y - 20)
+            (x, y),
+            (x + 10, y - 20),
+            (x + 20, y),
+            (x + 5, y + 10),
+            (x + 15, y + 30),
+            (x, y + 15),
+            (x - 15, y + 30),
+            (x - 5, y + 10),
+            (x - 20, y),
+            (x - 10, y - 20),
         ]
         pygame.draw.polygon(screen, Colors.YELLOW, points)
 
